@@ -147,3 +147,114 @@
 
 ;; (count-change-recursive 100)
 ;; (count-change-recursive 11)
+
+;; Exercise 1.11
+(define (f-recursive n)
+  (if (< n 3)
+      n
+      (+ (f-recursive (- n 1))
+         (* 2 (f-recursive (- n 2)))
+         (* 3 (f-recursive (- n 3))))))
+
+;; (trace f-recursive)
+;; (f-recursive 15)
+
+(define (f-iterative n)
+  (define (iter a b c count)
+    (if (= count 0)
+        c
+        (iter (+ (* 3 c) (* 2 b) a) a b (- count 1))))
+  ;; (trace iter)
+  (iter 2 1 0 n))
+
+;; (f-iterative 15)
+
+;; Exercise 1.12
+(define (pascal row col)
+  (if (or (< row 2) (= col 0) (= row col))
+      1
+      (+ (pascal (- row 1) col)
+         (pascal (- row 1) (- col 1)))))
+
+(define (test-pascal)
+  (define (p r c)
+    (display (pascal r c))
+    (display " "))
+  (p 0 0) (newline)
+  (p 1 0) (p 1 1) (newline)
+  (p 2 0) (p 2 1) (p 2 2) (newline)
+  (p 3 0) (p 3 1) (p 3 2) (p 3 3) (newline)
+  (p 4 0) (p 4 1) (p 4 2) (p 4 3) (p 4 4) (newline))
+
+;; (test-pascal)
+
+;; ------------------------------------------------------------------
+
+(define (expt-1 b n)                    ;linear recursion
+  (if (= n 0)
+      1
+      (* b (expt-1 b (- n 1)))))
+
+;; (trace expt-1)
+;; (expt-1 2 30)
+
+(define (expt-2 b n)                    ;linear iteration
+  (define (iter count product)
+    (if (= count 0)
+        product
+        (iter (- count 1) (* b product))))
+  ;; (trace iter)
+  (iter n 1))
+
+;; (expt-2 2 30)
+
+(define (expt-3 b n)                    ;logarithmic recursion
+  (cond [(= n 0) 1]
+        [(even? n) (expt-3 (square b) (/ n 2))]
+        ;; [(even? n) (square (expt-3 b (/ n 2)))]
+        [else (* b (expt-3 b (- n 1)))]))
+
+;; (trace expt-3)
+;; (expt-3 2 30)
+
+;; Exercise 1.16
+(define (expt-4 b n)                    ;logarithmic iteration
+  (define (iter a b n)
+    (cond [(= n 0) a]
+          [(even? n) (iter a (square b) (/ n 2))]
+          [else (iter (* a b) b (- n 1))]))
+  ;; (trace iter)
+  (iter 1 b n))
+
+;; (expt-4 2 30)
+
+(define (*-2 a b)                       ;linear recursion
+  (if (= b 0)
+      0
+      (+ a (*-2 a (- b 1)))))
+
+;; (trace *-2)
+;; (*-2 4 30)
+
+;; Exercise 1.17
+(define (double n) (* n 2))
+(define (halve n) (/ n 2))
+
+(define (*-3 a b)                       ;logarithmic recursion
+  (cond [(= b 0) 0]
+        [(even? b) (*-3 (double a) (halve b))]
+        [else (+ a (*-3 a (- b 1)))]))
+
+;; (trace *-3)
+;; (*-3 4 30)
+
+;; Exercise 1.18
+(define (*-4 a b)                       ;logarithmic iteration
+  (define (iter a b c)
+    (cond [(= b 0) c]                   ;a*b+c is invariant
+          [(even? b) (iter (double a) (halve b) c)]
+          [else (iter a (- b 1) (+ a c))]))
+  ;; (trace iter)
+  (iter a b 0))
+
+;; (*-4 4 30)
