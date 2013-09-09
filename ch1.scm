@@ -1,4 +1,6 @@
-#lang planet neil/sicp
+#lang racket
+
+(require racket/trace)
 
 ;; Exercise 1.3
 (define (square n)
@@ -29,6 +31,7 @@
     (if (good-enough? guess)
         guess
         (iter (improve guess))))
+  ;; (trace iter)
   (iter 1.0))
 
 (define (test-sqrt sqrt)
@@ -43,7 +46,6 @@
   (show-answer (sqrt (expt 10 20))))
 
 ;; (test-sqrt sqrt)
-;; (newline)
 
 ;; Exercise 1.7
 (define (sqrt2 n)
@@ -56,10 +58,10 @@
     (if (good-enough? guess)
         guess
         (iter (improve guess))))
+  ;; (trace iter)
   (iter 1.0))
 
 ;; (test-sqrt sqrt2)
-;; (newline)
 
 ;; Exercise 1.8
 (define (cube n)
@@ -77,9 +79,71 @@
     (if (good-enough? guess)
         guess
         (iter (improve guess))))
+  ;; (trace iter)
   (iter 1.0))
 
 ;; (cube-root (cube 2))
 ;; (cube-root (cube 3))
 ;; (cube-root (cube (expt 10 -10)))
 ;; (cube-root (cube (expt 10 10)))
+
+;; ------------------------------------------------------------------
+
+(define (factorial-recursive n)
+  (if (= n 1)
+      1
+      (* n (factorial-recursive (- n 1)))))
+
+;; (trace factorial-recursive)
+;; (factorial-recursive 5)
+
+(define (factorial-iterative n)
+  (define (iter product counter)        ;count-down
+    (if (= counter 1)
+        product
+        (iter (* product counter) (- counter 1))))
+  ;; (trace iter)
+  (iter 1 n))
+
+;; (factorial-iterative 5)
+
+(define (fib-recursive n)
+  ;; return the n-th fibonacci number
+  (if (< n 2)
+      n
+      (+ (fib-recursive (- n 1))
+         (fib-recursive (- n 2)))))
+
+;; (trace fib-recursive)
+;; (fib-recursive 15)
+
+(define (fib-iterative n)
+  (define (iter a b count)
+    (if (= count 0)
+        b
+        (iter (+ a b) a (- count 1))))
+  ;; (trace iter)
+  (iter 1 0 n))
+
+;; (fib-iterative 15)
+
+(define (count-change-recursive amount)
+  (define (cc amount kinds-of-coins)
+    (cond [(= amount 0) 1]
+          [(or (< amount 0) (= kinds-of-coins 0)) 0]
+          [else (+ (cc (- amount        ;using the first coin
+                          (first-denomination kinds-of-coins))
+                       kinds-of-coins)
+                   (cc amount           ;not using the first coin
+                       (- kinds-of-coins 1)))]))
+  ;; (trace cc)
+  (define (first-denomination kinds-of-coins)
+    (cond [(= kinds-of-coins 1) 1]
+          [(= kinds-of-coins 2) 5]
+          [(= kinds-of-coins 3) 10]
+          [(= kinds-of-coins 4) 25]
+          [(= kinds-of-coins 5) 50]))
+  (cc amount 5))
+
+;; (count-change-recursive 100)
+;; (count-change-recursive 11)
