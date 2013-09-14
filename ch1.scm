@@ -258,3 +258,248 @@
   (iter a b 0))
 
 ;; (*-4 4 30)
+
+;; ------------------------------------------------------------------
+
+(define (gcd a b)
+  (if (= b 0)
+      a
+      (gcd b (remainder a b))))
+
+;; (trace gcd)
+;; (gcd 40 6)
+;; (gcd 6 40)
+
+(define (smallest-divisor n)
+  (find-divisor n 2))
+
+(define (find-divisor n test-divisor)
+  (cond [(> (square test-divisor) n) n]
+        [(divides? test-divisor n) test-divisor]
+        [else (find-divisor n (+ test-divisor 1))]))
+
+(define (divides? a b)
+  (= (remainder b a) 0))
+
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+;; (trace find-divisor)
+;; (prime? 19999)
+
+(define (expmod base exp m)
+  ;; return (base**exp)%m (in python syntax)
+  (cond [(= exp 0) 1]                   ;base
+        ;; using the fact that (x * y) % m == ((x % m) * (y % m)) %m,
+        ;; so (x**2n) % m == ((x**n) * (x**n)) % m, which is
+        ;; ((x**n % m) * (x**n % m)) % m, or
+        ;; square((x**n % m)) % m
+        [(even? exp) (remainder (square (expmod base (/ exp 2) m))
+                                m)]
+        ;; in the following `base' can be (remainder base m) too
+        [else (remainder (* base (expmod base (- exp 1) m))
+                         m)]))
+
+;; (trace expmod)
+;; (expmod 8 30 5)
+
+(define (fermat-test n)
+  (define (try a)
+    (= (expmod a n n) a))
+  (try (+ 1 (random (- n 1)))))
+
+(define (fast-prime? n times)
+  (cond [(= times 0) true]
+        [(fermat-test n) (fast-prime? n (- times 1))]
+        [else false]))
+
+;; (fast-prime? (- (expt 2 4) 1) 3)        ;is not prime
+;; (fast-prime? (- (expt 2 5) 1) 3)        ;is prime (mersenne)
+;; (fast-prime? (- (expt 2 12) 1) 3)       ;is not prime
+;; (fast-prime? (- (expt 2 13) 1) 3)       ;is prime (mersenne)
+
+;; ;; Carmichael numbers - 561, 1105, 1729, 2465, 2821, and 6601
+;; ;; not prime, yet fool fermat-test
+;; (fast-prime? 561 1000)
+;; (fast-prime? 1105 1000)
+;; (fast-prime? 1729 1000)
+;; (fast-prime? 2465 1000)
+;; (fast-prime? 2821 1000)
+;; (fast-prime? 6601 1000)
+
+;; Exercise 1.21
+;; (smallest-divisor 199)
+;; (smallest-divisor 1999)
+;; (smallest-divisor 19999)
+
+;; Exercise 1.22
+(define (timed-prime-test n)
+  (newline)
+  (display n)
+  (start-prime-test n (current-inexact-milliseconds)))
+(define (start-prime-test n start-time)
+  (if (prime? n)
+      (report-prime (- (current-inexact-milliseconds) start-time))
+      (display "")))
+(define (report-prime elapsed-time)
+  (display " *** ")
+  (display elapsed-time))
+
+;; (timed-prime-test 199)
+;; (timed-prime-test 1999)
+;; (timed-prime-test 19999)
+
+(define (search-for-primes from to)
+  (define (search from)                 ;from is odd
+    (if (> from to)
+        0
+        (begin
+          (timed-prime-test from)
+          (search (+ from 2)))))
+  ;; (trace search)
+  (if (even? from)
+      (search-for-primes (+ from 1) to)
+      (search from)))
+
+;; (search-for-primes 1000 1020)           ;1009, 1013, 1019
+;; (search-for-primes 10000 10038)         ;10007, 10009, 10037
+;; (search-for-primes 100000 100044)       ;100003, 100019, 100043
+;; (search-for-primes 1000000 1000038)     ;1000003, 1000033, 1000037
+
+;; (timed-prime-test 1009)                 ;compile first run?
+
+;; (timed-prime-test 1009)
+;; (timed-prime-test 1013)
+;; (timed-prime-test 1019)
+;; (timed-prime-test 10007)
+;; (timed-prime-test 10009)
+;; (timed-prime-test 10037)
+;; (timed-prime-test 100003)
+;; (timed-prime-test 100019)
+;; (timed-prime-test 100043)
+;; (timed-prime-test 1000003)
+;; (timed-prime-test 1000033)
+;; (timed-prime-test 1000037)
+;; #f
+
+;; approximately sqrt(10) times faster, not exactly
+
+;; Exercise 1.23
+(define (smallest-divisor-2 n)
+  (find-divisor-2 n 2))
+
+(define (find-divisor-2 n test-divisor)
+  (define (next n)
+    (if (= n 2)
+        3
+        (+ n 2)))
+  (cond [(> (square test-divisor) n) n]
+        [(divides? test-divisor n) test-divisor]
+        [else (find-divisor-2 n (next test-divisor))]))
+
+(define (prime-2? n)
+  (= n (smallest-divisor-2 n)))
+
+(define (timed-prime-test-2 n)
+  (newline)
+  (display n)
+  (start-prime-test-2 n (current-inexact-milliseconds)))
+
+(define (start-prime-test-2 n start-time)
+  (if (prime-2? n)
+      (report-prime (- (current-inexact-milliseconds) start-time))
+      (display "")))
+
+;; (timed-prime-test-2 1009)               ;compile first run?
+
+;; (timed-prime-test-2 1009)
+;; (timed-prime-test-2 1013)
+;; (timed-prime-test-2 1019)
+;; (timed-prime-test-2 10007)
+;; (timed-prime-test-2 10009)
+;; (timed-prime-test-2 10037)
+;; (timed-prime-test-2 100003)
+;; (timed-prime-test-2 100019)
+;; (timed-prime-test-2 100043)
+;; (timed-prime-test-2 1000003)
+;; (timed-prime-test-2 1000033)
+;; (timed-prime-test-2 1000037)
+;; #f
+
+;; timed-prime-test-2 is slightly more than twice as fast as
+;; timed-prime-test (for the values > 10,000)
+
+;; Exercise 1.24
+(define (timed-prime-test-3 n)
+  (newline)
+  (display n)
+  (start-prime-test-3 n (current-inexact-milliseconds)))
+
+(define (start-prime-test-3 n start-time)
+  (if (fast-prime? n 1)
+      (report-prime (- (current-inexact-milliseconds) start-time))
+      (display "")))
+
+;; (timed-prime-test-3 1009)               ;compile first run?
+
+;; (timed-prime-test-3 1009)
+;; (timed-prime-test-3 1013)
+;; (timed-prime-test-3 1019)
+;; (timed-prime-test-3 10007)
+;; (timed-prime-test-3 10009)
+;; (timed-prime-test-3 10037)
+;; (timed-prime-test-3 100003)
+;; (timed-prime-test-3 100019)
+;; (timed-prime-test-3 100043)
+;; (timed-prime-test-3 1000003)
+;; (timed-prime-test-3 1000033)
+;; (timed-prime-test-3 1000037)
+;; #f
+
+;; timed-prime-test-3 is 3-4 times faster than timed-prime-test-2, but
+;; the numbers are too small to be sure, maybe run them 1000 times
+;; each?
+
+;; Exercise 1.28
+;; Miller-Rabin test
+;; a**(n-1) % n == 1
+(define (expmod-modified base exp m)
+  ;; like expmod above, but signals if it discovers a ``nontrivial
+  ;; square root of 1 modulo n''
+  (cond [(= exp 0) 1]
+        [(even? exp)
+         (let ([root (expmod-modified base (/ exp 2) m)])
+           (let ([value (remainder (square root) m)])
+             (if (and (= value 1)
+                      (not (= root 1))
+                      (not (= root (- m 1))))
+                 0                     ;non-trivial root of 1 modulo n
+                 value)))]
+        [else
+         (remainder (* base (expmod-modified base (- exp 1) m))
+                    m)]))
+
+(define (miller-rabin-test n)
+  (define (try a)
+    (let ([em (expmod-modified a (- n 1) n)])
+      (or (= em 0) (= em 1))))
+  (try (+ 1 (random (- n 1)))))
+
+(define (fast-prime-mr? n times)
+  (cond [(= times 0) true]
+        [(miller-rabin-test n) (fast-prime-mr? n (- times 1))]
+        [else false]))
+
+;; (trace fast-prime-mr?)
+
+;; Carmichael numbers - 561, 1105, 1729, 2465, 2821, and 6601
+;; not prime, don't fool miller-rabin test
+;; (fast-prime-mr? 2 1000)
+;; (fast-prime-mr? 3 1000)
+;; (fast-prime-mr? 6 1000)
+;; (fast-prime-mr? 561 1000)
+;; (fast-prime-mr? 1105 1000)
+;; (fast-prime-mr? 1729 1000)
+;; (fast-prime-mr? 2465 1000)
+;; (fast-prime-mr? 2821 1000)
+;; (fast-prime-mr? 6601 1000)
