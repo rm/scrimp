@@ -175,7 +175,7 @@
 
 ;; Exercise 1.12
 (define (pascal row col)
-  (if (or (< row 2) (= col 0) (= row col))
+  (if (or (= col 0) (= row col))
       1
       (+ (pascal (- row 1) col)
          (pascal (- row 1) (- col 1)))))
