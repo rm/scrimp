@@ -2,6 +2,9 @@
 
 (require racket/trace)
 
+;; ------------------------------------------------------------------
+;; Section 1.1
+
 ;; Exercise 1.3
 (define (square n)
   (* n n))
@@ -88,6 +91,7 @@
 ;; (cube-root (cube (expt 10 10)))
 
 ;; ------------------------------------------------------------------
+;; Section 1.2
 
 (define (factorial-recursive n)
   (if (= n 1)
