@@ -507,3 +507,168 @@
 ;; (fast-prime-mr? 2465 1000)
 ;; (fast-prime-mr? 2821 1000)
 ;; (fast-prime-mr? 6601 1000)
+
+;; ------------------------------------------------------------------
+;; Section 1.3
+
+(define (sum-integers a b)
+  (if (> a b)
+      0
+      (+ a
+         (sum-integers (+ a 1) b))))
+
+;; (sum-integers 1 100)
+
+(define (sum-cubes a b)
+  (if (> a b)
+      0
+      (+ (cube a)
+         (sum-cubes (+ a 1) b))))
+
+;; (sum-cubes 1 5)
+
+(define (pi-sum a b)
+  (if (> a b)
+      0
+      (+ (/ 1.0 (* a (+ a 2)))
+         (pi-sum (+ a 4) b))))
+
+;; (* 8 (pi-sum 1 100000))
+
+(define (sum term a next b)
+  (if (> a b)
+      0
+      (+ (term a)
+         (sum term (next a) next b))))
+
+(define (inc a) (+ a 1))
+(define (sum-cubes-2 a b)
+  (sum cube a inc b))
+
+;; (sum-cubes-2 1 5)
+
+(define (identity x) x)
+(define (sum-integers-2 a b)
+  (sum identity a inc b))
+
+;; (sum-integers-2 1 100)
+
+(define (pi-sum-2 a b)
+  (define (term a)
+    (+ (/ 1.0 (* a (+ a 2)))))
+  (define (next a)
+    (+ a 4))
+  (sum term a next b))
+
+;; (* 8 (pi-sum-2 1 100000))
+
+(define (integral f a b dx)
+  (define (add-dx x) (+ x dx))
+  (* (sum f (+ a (/ dx 2.0)) add-dx b)
+     dx))
+
+;; (integral cube 0 1 0.01)
+;; (integral cube 0 1 0.001)
+;; (integral cube 0 1 0.0001)
+
+;; Exercise 1.29
+(define (simpsons f a b n)
+  (define h (/ (- b a) n))
+  (define (term k)
+    (* (cond [(or (= k 0) (= k n)) 1]
+             [(odd? k) 4]
+             [else 2])
+       (f (+ a (* k h)))))
+  (* (/ h 3.0)
+     (sum term 0 inc n)))
+
+;; (simpsons cube 0 1 100)
+;; (simpsons cube 0 1 1000)
+;; (simpsons cube 0 1 10000)
+
+;; Exercise 1.30
+(define (sum-iterative term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (+ (term a) result))))
+  (iter a 0))
+
+;; Exercise 1.31
+(define (product-iter term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (* (term a) result))))
+  (iter a 1))
+
+(define (product-recur term a next b)
+  (if (> a b)
+      1
+      (* (term a)
+         (product-recur term (next a) next b))))
+
+(define product product-recur)
+
+(define (factorial-product n)
+  (product identity 1 inc n))
+
+;; (factorial-product 5)
+;; (factorial-product 10)
+
+(define (pi-product n)
+  (define (term k)
+    (let ([n (if (even? k) (+ k 2.0) (+ k 1.0))]
+          [d (if (even? k) (+ k 1.0) (+ k 2.0))])
+      (/ n d)))
+  (product term 1 inc n))
+
+;; (* 4 (pi-product 10))
+;; (* 4 (pi-product 100))
+;; (* 4 (pi-product 1000))
+
+;; Exercise 1.32
+(define (accumulate-recur combiner null-value term a next b)
+  (if (> a b)
+      null-value
+      (combiner (term a)
+                (accumulate-recur combiner null-value term (next a) next b))))
+
+(define (accumulate-iter combiner null-value term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (combiner (term a) result))))
+  (iter a null-value))
+
+(define accumulate accumulate-recur)
+
+(define (sum-accumulate term a next b)
+  (accumulate + 0 term a next b))
+(define (product-accumulate term a next b)
+  (accumulate * 1 term a next b))
+
+;; (define sum sum-accumulate)
+;; (define product product-accumulate)
+
+;; Exercise 1.33
+(define (filtered-accumulate predicate combiner null-value term a next b)
+  ;; iterative
+  (define (iter a result)
+    (cond [(> a b) result]
+          [(predicate (term a)) (iter (next a) (combiner (term a) result))]
+          [else (iter (next a) result)]))
+  (iter a null-value))
+
+;; 1.33a
+(define (sum-of-squares-of-primes-between a b)
+  (filtered-accumulate prime? + 0 identity a inc b))
+
+;; 1.33b
+(define (product-of-relatively-prime-to-n n)
+  (define (rel-prime a)
+    (= (gcd a n) 1))
+  (filtered-accumulate rel-prime * 1 identity 1 inc n))
+
+;; (sum-of-squares-of-primes-between 2 10)
+;; (product-of-relatively-prime-to-n 10)
