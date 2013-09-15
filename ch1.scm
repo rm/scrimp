@@ -485,8 +485,7 @@
 
 (define (miller-rabin-test n)
   (define (try a)
-    (let ([em (expmod-modified a (- n 1) n)])
-      (or (= em 0) (= em 1))))
+    (= (expmod-modified a (- n 1) n) 1))
   (try (+ 1 (random (- n 1)))))
 
 (define (fast-prime-mr? n times)
@@ -496,17 +495,17 @@
 
 ;; (trace fast-prime-mr?)
 
+(fast-prime-mr? 2 1000)
+(fast-prime-mr? 3 1000)
+(fast-prime-mr? 6 1000)
 ;; Carmichael numbers - 561, 1105, 1729, 2465, 2821, and 6601
 ;; not prime, don't fool miller-rabin test
-;; (fast-prime-mr? 2 1000)
-;; (fast-prime-mr? 3 1000)
-;; (fast-prime-mr? 6 1000)
-;; (fast-prime-mr? 561 1000)
-;; (fast-prime-mr? 1105 1000)
-;; (fast-prime-mr? 1729 1000)
-;; (fast-prime-mr? 2465 1000)
-;; (fast-prime-mr? 2821 1000)
-;; (fast-prime-mr? 6601 1000)
+(fast-prime-mr? 561 1000)
+(fast-prime-mr? 1105 1000)
+(fast-prime-mr? 1729 1000)
+(fast-prime-mr? 2465 1000)
+(fast-prime-mr? 2821 1000)
+(fast-prime-mr? 6601 1000)
 
 ;; ------------------------------------------------------------------
 ;; Section 1.3
