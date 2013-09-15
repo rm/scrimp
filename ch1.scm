@@ -495,17 +495,17 @@
 
 ;; (trace fast-prime-mr?)
 
-(fast-prime-mr? 2 1000)
-(fast-prime-mr? 3 1000)
-(fast-prime-mr? 6 1000)
-;; Carmichael numbers - 561, 1105, 1729, 2465, 2821, and 6601
-;; not prime, don't fool miller-rabin test
-(fast-prime-mr? 561 1000)
-(fast-prime-mr? 1105 1000)
-(fast-prime-mr? 1729 1000)
-(fast-prime-mr? 2465 1000)
-(fast-prime-mr? 2821 1000)
-(fast-prime-mr? 6601 1000)
+;; (fast-prime-mr? 2 1000)
+;; (fast-prime-mr? 3 1000)
+;; (fast-prime-mr? 6 1000)
+;; ;; Carmichael numbers - 561, 1105, 1729, 2465, 2821, and 6601
+;; ;; not prime, don't fool miller-rabin test
+;; (fast-prime-mr? 561 1000)
+;; (fast-prime-mr? 1105 1000)
+;; (fast-prime-mr? 1729 1000)
+;; (fast-prime-mr? 2465 1000)
+;; (fast-prime-mr? 2821 1000)
+;; (fast-prime-mr? 6601 1000)
 
 ;; ------------------------------------------------------------------
 ;; Section 1.3
@@ -797,3 +797,168 @@
 ;; (tan-cf (/ pi 4) 10)
 ;; (tan-cf (/ (* 3 pi) 4) 10)
 ;; (tan-cf pi 10)
+
+(define (average-damp f)
+  (lambda (x) (average x (f x))))
+
+;; ((average-damp square) 10)
+
+(define (sqrt-fp2 x)
+  (fixed-point (average-damp (lambda (y) (/ x y)))
+               1.0))
+
+;; (sqrt-fp2 2)
+
+(define (cube-root-fp x)
+  (fixed-point (average-damp (lambda (y) (/ x (square y))))
+               1.0))
+
+;; (cube-root-fp 8)
+;; (cube-root-fp 10)
+
+(define (deriv g)
+  (lambda (x)
+    (/ (- (g (+ x dx)) (g x))
+       dx)))
+
+(define dx 0.00001)
+
+;; ((deriv cube) 5)
+
+(define (newton-transform g)
+  (lambda (x)
+    (- x (/ (g x) ((deriv g) x)))))
+
+(define (newtons-method g guess)
+  (fixed-point (newton-transform g) guess))
+
+;; (trace newton-transform)
+;; (trace newtons-method)
+;; (trace fixed-point)
+
+(define (sqrt-nm x)
+  (newtons-method (lambda (y) (- (square y) x))
+                  1.0))
+
+;; (sqrt-nm 2)
+
+(define (fixed-point-of-transform g transform guess)
+  (fixed-point (transform g) guess))
+
+(define (sqrt-fpot-1 x)
+  (fixed-point-of-transform (lambda (y) (/ x y))
+                            average-damp
+                            1.0))
+
+;; (sqrt-fpot-1 2)
+
+(define (sqrt-fpot-2 x)
+  (fixed-point-of-transform (lambda (y) (- (square y) x))
+                            newton-transform
+                            1.0))
+
+;; (sqrt-fpot-2 2)
+
+;; Exercise 1.40
+(define (cubic a b c)
+  (lambda (x)
+    (+ (cube x) (* a (square x)) (* b x) c)))
+
+;; (newtons-method (cubic 1 2 3) 1)
+
+;; Exercise 1.41
+(define (double-f f)
+  (lambda (x)
+    (f (f x))))
+
+;; (((double-f (double-f double-f)) inc) 5)
+
+;; Exercise 1.42
+(define (compose f g)
+  (lambda (x)
+    (f (g x))))
+
+;; ((compose square inc) 6)
+
+;; Exercise 1.43
+(define (repeated f n)
+  (if (= n 1)
+      f
+      (compose f (repeated f (- n 1)))))
+
+;; ((repeated square 2) 5)
+
+;; Exercise 1.44
+(define (smooth f)
+  (lambda (x)
+    (/ (+ (f (- x dx))
+          (f x)
+          (f (+ x dx)))
+       3.0)))
+
+(define (smooth-n f n)
+  (repeated (smooth f) n))
+
+;; Exercise 1.45
+(define (4th-root x)
+  (fixed-point-of-transform (lambda (y) (/ x (cube y)))
+                            (repeated average-damp 2)
+                            1.0))
+
+;; (4th-root (* 2 2 2 2))
+
+(define (nth-root n x)
+  (fixed-point-of-transform (lambda (y) (/ x (expt y (- n 1))))
+                            (repeated average-damp
+                                      (floor (/ (log n)
+                                                (log 2))))
+                            1.0))
+
+;; (nth-root 4 (expt 2 4))                 ;2
+;; (nth-root 5 (expt 2 5))
+;; (nth-root 6 (expt 2 6))
+;; (nth-root 7 (expt 2 7))
+;; (nth-root 8 (expt 2 8))                 ;3
+;; (nth-root 9 (expt 2 9))
+;; (nth-root 10 (expt 2 10))
+;; (nth-root 11 (expt 2 11))
+;; (nth-root 12 (expt 2 12))
+;; (nth-root 13 (expt 2 13))
+;; (nth-root 14 (expt 2 14))
+;; (nth-root 15 (expt 2 15))
+;; (nth-root 16 (expt 2 16))               ;4
+;; (nth-root 17 (expt 2 17))
+;; (nth-root 32 (expt 2 32))
+;; (nth-root 64 (expt 2 64))
+
+;; looks like you nead to repeat the average-damp lg(n) times
+;; (log to base 2)
+
+;; Exercise 1.46
+(define (iterative-improve good-enough? improve)
+  (lambda (x)
+    (define (try x)
+      (if (good-enough? x)
+          x
+          (try (improve x))))
+    (try x)))
+
+(define (sqrt-ii n)
+  ((iterative-improve
+    (lambda (guess) (< (abs (- (square guess) n)) 0.001))
+    (lambda (guess) (average guess (/ n guess))))
+   1.0))
+
+;; (sqrt-ii 2)
+
+(define (fixed-point-ii f first-guess)
+  ((iterative-improve
+    (lambda (guess) (< (abs (- (f guess) guess)) 0.001))
+    f)
+   first-guess))
+
+(define (sqrt-fp-ii n)
+  (fixed-point-ii (average-damp (lambda (y) (/ n y)))
+                  1.0))
+
+;; (sqrt-fp-ii 2)
