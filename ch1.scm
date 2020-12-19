@@ -12,14 +12,26 @@
 (define (sum-of-squares a b)
   (+ (square a) (square b)))
 
+;; this only works if there is a "smallest" number
+;; (define (sum-of-squares-larger a b c)
+;;   (cond ((and (< a b) (< a c)) (sum-of-squares b c))
+;;         ((and (< b a) (< b c)) (sum-of-squares a c))
+;;         ((and (< c a) (< c b)) (sum-of-squares a b))))
+
 (define (sum-of-squares-larger a b c)
   (cond ((and (< a b) (< a c)) (sum-of-squares b c))
         ((and (< b a) (< b c)) (sum-of-squares a c))
-        ((and (< c a) (< c b)) (sum-of-squares a b))))
+        ((and (< c a) (< c b)) (sum-of-squares a b))
+        ;; if there isn't a "smallest" number
+        ((= a b) (sum-of-squares a c))
+        ((= b c) (sum-of-squares a b))
+        ((= c a) (sum-of-squares b c))))
 
 ;; (sum-of-squares-larger 1 2 3)
 ;; (sum-of-squares-larger 2 1 3)
 ;; (sum-of-squares-larger 3 2 1)
+;; (sum-of-squares-larger 1 2 1)
+
 
 ;; SQRT by Newton's Method
 (define (average a b)
