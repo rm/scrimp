@@ -1,6 +1,6 @@
 #lang racket
 
-(require racket/trace)
+;; (require racket/trace)
 
 ;; ------------------------------------------------------------------
 ;; Section 1.1
