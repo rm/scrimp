@@ -1,6 +1,10 @@
 #lang racket
 
-;; (require racket/trace)
+(require racket/trace)
+
+;; #lang sicp --- doesn't allow "require"
+;; but with #lang racket, I'll have to define some primitives
+
 
 ;; ------------------------------------------------------------------
 ;; Section 1.1
@@ -122,6 +126,49 @@
   (iter 1 n))
 
 ;; (factorial-iterative 5)
+
+
+;; - Exercise 1.9 ------------------------------------------
+(define (inc a) (+ a 1))
+(define (dec a) (- a 1))
+
+(define (+-v1 a b)
+  (if (= a 0)
+      b
+      (inc (+-v1 (dec a) b))))
+
+;; (trace +-v1)
+;; (+-v1 4 4)
+;; >(+-v1 4 4)
+;; > (+-v1 3 4)
+;; > >(+-v1 2 4)
+;; > > (+-v1 1 4)
+;; > > >(+-v1 0 4)
+;; < < <4
+;; < < 5
+;; < <6
+;; < 7
+;; <8
+;; 8
+
+(define (+-v2 a b)
+  (if (= a 0)
+      b
+      (+-v2 (dec a) (inc b))))
+
+;; (trace +-v2)
+;; (+-v2 4 4)
+;; >(+-v2 4 4)
+;; >(+-v2 3 5)
+;; >(+-v2 2 6)
+;; >(+-v2 1 7)
+;; >(+-v2 0 8)
+;; <8
+;; 8
+
+;; +-v1 is linear recursive
+;; +-v2 is linear iterative
+;; - 1.9 ---------------------------------------------------
 
 (define (fib-recursive n)
   ;; return the n-th fibonacci number
@@ -552,7 +599,6 @@
       (+ (term a)
          (sum term (next a) next b))))
 
-(define (inc a) (+ a 1))
 (define (sum-cubes-2 a b)
   (sum cube a inc b))
 
