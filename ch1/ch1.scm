@@ -567,6 +567,31 @@
 ;; the numbers are too small to be sure, maybe run them 1000 times
 ;; each?
 
+
+;; - Exercise 1.27 -----------------------------------------
+(define (check-exp-mod n)
+  (define (test a)
+    (cond ((= a n) (display "*done*"))
+          (else (cond ((not (= (expmod a n n) a))
+                       (display "(expmod a n n) is:")
+                       (display (expmod a n n))
+                       (display " - with a:")
+                       (display a)
+                       (display ", n:")
+                       (display n)
+                       (newline)))
+                (test (inc a)))))
+  (test 0))
+
+;; (check-exp-mod  561)
+;; (check-exp-mod 1105)
+;; (check-exp-mod 1729)
+;; (check-exp-mod 2465)
+;; (check-exp-mod 2821)
+;; (check-exp-mod 6601)
+;; - 1.27 --------------------------------------------------
+
+
 ;; Exercise 1.28
 ;; Miller-Rabin test
 ;; a**(n-1) % n == 1
